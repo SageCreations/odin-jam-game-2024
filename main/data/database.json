@@ -1,0 +1,14 @@
+{
+	"enemy_spawn_points": {
+
+	},
+	"player": {
+		"health": 100,
+		"position": [
+			0.20000000,
+			0.40000001,
+			0.20000000
+		],
+		"attack": 20
+	}
+}
