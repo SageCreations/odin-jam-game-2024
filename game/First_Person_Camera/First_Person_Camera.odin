@@ -36,7 +36,6 @@ generate_map :: proc(cubicmap_path: cstring, atlas_path: cstring) -> rl.Model {
     model.materials[0].maps[rl.MaterialMapIndex.ALBEDO].texture = texture    // Set map diffuse texture
 
     rl.UnloadImage(image)     // Unload cubesmap image from RAM, already uploaded to VRAM
-
     return model
 }
 
@@ -44,7 +43,7 @@ main:: proc(){
     WINDOW_SIZE :: 1000
     rl.InitWindow(WINDOW_SIZE,WINDOW_SIZE,"First_Person_Camera")
 
-    image : rl.Image = rl.LoadImage("../../resources/cubicmap.png")               // Load cubicmap image (RAM)
+    image : rl.Image = rl.LoadImage("../../resources/Odin_Test_Level.png")               // Load cubicmap image (RAM)
     cubicmap : rl.Texture2D = rl.LoadTextureFromImage(image)     // Convert image to texture to display (VRAM)
     map_Pixels : [^]rl.Color = rl.LoadImageColors(image) //This is a dynamic array ptrs
 
@@ -52,11 +51,10 @@ main:: proc(){
     camera.position = rl.Vector3{0.2,0.4,0.2}
     camera.target = rl.Vector3{0.185,0.4,0.0}
     camera.up = rl.Vector3{0.0,1.0,0.0}
-    camera.fovy = 45.0
+    camera.fovy = 90.0
     camera.projection = .PERSPECTIVE
 
-
-    model := generate_map("../../resources/cubicmap.png","../../resources/cubicmap_atlas.png")
+    model := generate_map("../../resources/Odin_Test_Level.png","../../resources/cubicmap_atlas.png")
 
     map_Position : rl.Vector3 = {-16.0,0.0,-8.0}
 
