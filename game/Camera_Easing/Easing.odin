@@ -1,21 +1,9 @@
 package Basic_Lighting
 
-//#include "raylib.h"
 import rl "vendor:raylib"
-import "core:fmt"
-//#include "raymath.h"
-//
-//#define RLIGHTS_IMPLEMENTATION
-//#include "rlights.h"
+import "core:odin/format"
+import "core:c"
 
-
-//
-//#if defined(PLATFORM_DESKTOP)
-//#define GLSL_VERSION            330
-//#else   // PLATFORM_ANDROID, PLATFORM_WEB
-//#define GLSL_VERSION            100
-//#endif
-//
 ////------------------------------------------------------------------------------------
 //// Program main entry point
 ////------------------------------------------------------------------------------------
@@ -23,62 +11,110 @@ import "core:fmt"
 //{
 //// Initialization
 ////--------------------------------------------------------------------------------------
-//const int screenWidth = 800;
-//const int screenHeight = 450;
-//
-//SetConfigFlags(FLAG_MSAA_4X_HINT);  // Enable Multi Sampling Anti Aliasing 4x (if available)
-//InitWindow(screenWidth, screenHeight, "raylib [shaders] example - basic lighting");
-//
-//// Define the camera to look into our 3d world
-//Camera camera = { 0 };
-//camera.position = (Vector3){ 2.0f, 4.0f, 6.0f };    // Camera position
-//camera.target = (Vector3){ 0.0f, 0.5f, 0.0f };      // Camera looking at point
-//camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-//camera.fovy = 45.0f;                                // Camera field-of-view Y
-//camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
-//
-//// Load basic lighting shader
-//Shader shader = LoadShader(TextFormat("resources/shaders/glsl%i/lighting.vs", GLSL_VERSION),
-//TextFormat("resources/shaders/glsl%i/lighting.fs", GLSL_VERSION));
-//// Get some required shader locations
-//shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
-//// NOTE: "matModel" location name is automatically assigned on shader loading,
-//// no need to get the location again if using that uniform name
-////shader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocation(shader, "matModel");
-//
-//// Ambient light level (some basic lighting)
-//int ambientLoc = GetShaderLocation(shader, "ambient");
-//SetShaderValue(shader, ambientLoc, (float[4]){ 0.1f, 0.1f, 0.1f, 1.0f }, SHADER_UNIFORM_VEC4);
-//
-//// Create lights
-//Light lights[MAX_LIGHTS] = { 0 };
-//lights[0] = CreateLight(LIGHT_POINT, (Vector3){ -2, 1, -2 }, Vector3Zero(), YELLOW, shader);
-//lights[1] = CreateLight(LIGHT_POINT, (Vector3){ 2, 1, 2 }, Vector3Zero(), RED, shader);
-//lights[2] = CreateLight(LIGHT_POINT, (Vector3){ -2, 1, 2 }, Vector3Zero(), GREEN, shader);
-//lights[3] = CreateLight(LIGHT_POINT, (Vector3){ 2, 1, -2 }, Vector3Zero(), BLUE, shader);
-//
-//SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
-////--------------------------------------------------------------------------------------
-//
-//// Main game loop
-//while (!WindowShouldClose())        // Detect window close button or ESC key
+
+main:: proc() {
+    WINDOW_SIZE :: 1000
+    rl.InitWindow(WINDOW_SIZE,WINDOW_SIZE,"Ease_Out")
+
+    rect : rl.Rectangle = {cast(c.float)rl.GetScreenWidth()/2.0,-100,100,100}
+    rotation : c.float = 0.0
+    alpha : c.float = 1.0
+
+    state : c.int = 0
+
+    frame_Counter : c.int = 0
+
+    rl.SetTargetFPS(60)
+
+    for !rl.WindowShouldClose(){
+        switch i {
+        case 0:
+            frame_Counter += 1
+            rect.height = rl.EaseBounceOut(cast(c.float)frame_Counter,100,-90,120)
+            rect.width = rl.EaseBounceOut(cast(c.float)frame_Counter,cast(c.float)rl.GetScreenWidth(),120)
+            if frame_Counter >= 120{
+                frame_Counter = 0
+                state = 1
+                }
+        break
+        case 1:
+        }
+        }
+    }
+
+//switch (state)
 //{
-//// Update
-////----------------------------------------------------------------------------------
-//UpdateCamera(&camera, CAMERA_ORBITAL);
+//case 0:     // Move box down to center of screen
+//{
+//framesCounter++;
 //
-//// Update the shader with the camera view vector (points towards { 0.0f, 0.0f, 0.0f })
-//float cameraPos[3] = { camera.position.x, camera.position.y, camera.position.z };
-//SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
+//// NOTE: Remember that 3rd parameter of easing function refers to
+//// desired value variation, do not confuse it with expected final value!
+//rec.y = EaseElasticOut((float)framesCounter, -100, GetScreenHeight()/2.0f + 100, 120);
 //
-//// Check key inputs to enable/disable lights
-//if (IsKeyPressed(KEY_Y)) { lights[0].enabled = !lights[0].enabled; }
-//if (IsKeyPressed(KEY_R)) { lights[1].enabled = !lights[1].enabled; }
-//if (IsKeyPressed(KEY_G)) { lights[2].enabled = !lights[2].enabled; }
-//if (IsKeyPressed(KEY_B)) { lights[3].enabled = !lights[3].enabled; }
+//if (framesCounter >= 120)
+//{
+//framesCounter = 0;
+//state = 1;
+//}
+//} break;
+//case 1:     // Scale box to an horizontal bar
+//{
+//framesCounter++;
+//rec.height = EaseBounceOut((float)framesCounter, 100, -90, 120);
+//rec.width = EaseBounceOut((float)framesCounter, 100, (float)GetScreenWidth(), 120);
 //
-//// Update light values (actually, only enable/disable them)
-//for (int i = 0; i < MAX_LIGHTS; i++) UpdateLightValues(shader, lights[i]);
+//if (framesCounter >= 120)
+//{
+//framesCounter = 0;
+//state = 2;
+//}
+//} break;
+//case 2:     // Rotate horizontal bar rectangle
+//{
+//framesCounter++;
+//rotation = EaseQuadOut((float)framesCounter, 0.0f, 270.0f, 240);
+//
+//if (framesCounter >= 240)
+//{
+//framesCounter = 0;
+//state = 3;
+//}
+//} break;
+//case 3:     // Increase bar size to fill all screen
+//{
+//framesCounter++;
+//rec.height = EaseCircOut((float)framesCounter, 10, (float)GetScreenWidth(), 120);
+//
+//if (framesCounter >= 120)
+//{
+//framesCounter = 0;
+//state = 4;
+//}
+//} break;
+//case 4:     // Fade out animation
+//{
+//framesCounter++;
+//alpha = EaseSineOut((float)framesCounter, 1.0f, -1.0f, 160);
+//
+//if (framesCounter >= 160)
+//{
+//framesCounter = 0;
+//state = 5;
+//}
+//} break;
+//default: break;
+//}
+//
+//// Reset animation at any moment
+//if (IsKeyPressed(KEY_SPACE))
+//{
+//rec = (Rectangle){ GetScreenWidth()/2.0f, -100, 100, 100 };
+//rotation = 0.0f;
+//alpha = 1.0f;
+//state = 0;
+//framesCounter = 0;
+//}
 ////----------------------------------------------------------------------------------
 //
 //// Draw
@@ -87,29 +123,9 @@ import "core:fmt"
 //
 //ClearBackground(RAYWHITE);
 //
-//BeginMode3D(camera);
+//DrawRectanglePro(rec, (Vector2){ rec.width/2, rec.height/2 }, rotation, Fade(BLACK, alpha));
 //
-//BeginShaderMode(shader);
-//
-//DrawPlane(Vector3Zero(), (Vector2) { 10.0, 10.0 }, WHITE);
-//DrawCube(Vector3Zero(), 2.0, 4.0, 2.0, WHITE);
-//
-//EndShaderMode();
-//
-//// Draw spheres to show where the lights are
-//for (int i = 0; i < MAX_LIGHTS; i++)
-//{
-//if (lights[i].enabled) DrawSphereEx(lights[i].position, 0.2f, 8, 8, lights[i].color);
-//else DrawSphereWires(lights[i].position, 0.2f, 8, 8, ColorAlpha(lights[i].color, 0.3f));
-//}
-//
-//DrawGrid(10, 1.0f);
-//
-//EndMode3D();
-//
-//DrawFPS(10, 10);
-//
-//DrawText("Use keys [Y][R][G][B] to toggle lights", 10, 40, 20, DARKGRAY);
+//DrawText("PRESS [SPACE] TO RESET BOX ANIMATION!", 10, GetScreenHeight() - 25, 20, LIGHTGRAY);
 //
 //EndDrawing();
 ////----------------------------------------------------------------------------------
@@ -117,9 +133,7 @@ import "core:fmt"
 //
 //// De-Initialization
 ////--------------------------------------------------------------------------------------
-//UnloadShader(shader);   // Unload shader
-//
-//CloseWindow();          // Close window and OpenGL context
+//CloseWindow();        // Close window and OpenGL context
 ////--------------------------------------------------------------------------------------
 //
 //return 0;
