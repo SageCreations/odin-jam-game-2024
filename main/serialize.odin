@@ -10,13 +10,12 @@ DATABASE_FILENAME :: "data/database.json"
 
 
 Database :: struct {
-    enemy_spawn_points: map[string]rl.Vector2, //enemy id as key and its position data
-    player: Player,
+    gameInit: GameData,
+    storedSession: GameData,
 }
 
 Enemy :: struct {
     id: string,
-    attack: int,
     health: int,
     position: rl.Vector3
 }

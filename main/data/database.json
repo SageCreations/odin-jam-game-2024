@@ -1,14 +1,52 @@
 {
-	"enemy_spawn_points": {
-
-	},
-	"player": {
-		"health": 100,
-		"position": [
-			0.20000000,
-			0.40000001,
-			0.20000000
+	"gameInit": {
+		"player": {
+			"health": 100,
+			"position": [
+				0.20000000,
+				0.40000001,
+				0.20000000
+			],
+			"attack": 20
+		},
+		"player_spawn": [
+			0.00000000,
+			0.00000000,
+			0.00000000
 		],
-		"attack": 20
+		"enemy_spawn_points": {
+
+		},
+		"health_boost_spawn_points": [
+
+		],
+		"attack_boost_spawn_points": [
+
+		]
+	},
+	"storedSession": {
+		"player": {
+			"health": 0,
+			"position": [
+				0.20000000,
+				0.40000001,
+				0.20000000
+			],
+			"attack": 0
+		},
+		"player_spawn": [
+			0.00000000,
+			0.00000000,
+			0.00000000
+		],
+		"enemy_spawn_points": {
+
+		},
+		"health_boost_spawn_points": [
+
+		],
+		"attack_boost_spawn_points": [
+
+		]
 	}
 }
