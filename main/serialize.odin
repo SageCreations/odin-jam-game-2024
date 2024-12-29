@@ -11,7 +11,7 @@ DATABASE_FILENAME :: "data/database.json"
 
 Database :: struct {
     gameInit: GameData,
-    storedSession: GameData,
+    liveGame: GameData,
 }
 
 Enemy :: struct {
@@ -24,6 +24,11 @@ Player :: struct {
     health: int,
     position: rl.Vector3,
     attack: int,
+}
+
+Item :: struct {
+    position: rl.Vector3,
+    item_type: int, // 0 - health boost, 1 - attack boost
 }
 
 

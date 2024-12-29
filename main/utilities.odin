@@ -20,3 +20,8 @@ lose_health :: proc(player: ^Player) -> bool {
         return true
     }
 }
+
+add_attack :: proc(player: ^Player) {
+    player.attack += 20
+}
+
