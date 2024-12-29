@@ -19,6 +19,7 @@ import rl "vendor:raylib"
 import "core:fmt"
 import "core:c"
 import "core:mem"
+import "vendor:microui"
 
 //// Program main entry point
 ////------------------------------------------------------------------------------------
@@ -39,6 +40,8 @@ generate_map :: proc(cubicmap_path: cstring, atlas_path: cstring) -> rl.Model {
     return model
 }
 
+
+
 main:: proc(){
     WINDOW_SIZE :: 1000
     rl.InitWindow(WINDOW_SIZE,WINDOW_SIZE,"First_Person_Camera")
@@ -47,6 +50,16 @@ main:: proc(){
     cubicmap : rl.Texture2D = rl.LoadTextureFromImage(image)     // Convert image to texture to display (VRAM)
     map_Pixels : [^]rl.Color = rl.LoadImageColors(image) //This is a dynamic array ptrs
 
+    //Adding the Sword_Srite
+    sword_sprite : rl.Texture2D = rl.LoadTexture("../../resources/Art_Asset_Odin.png")
+    position : rl.Vector2 = {350.0,280.0}
+    frame_Rect : rl.Rectangle = {0.0,0.0,cast(c.float)sword_sprite.width/4, cast(c.float)sword_sprite.height}
+    current_Frame : c.int = 0
+    //Frame Counter
+    frame_Counter : c.int = 0
+    frame_Speed : c.int = 8
+    atk_active : bool = false
+
     camera : rl.Camera3D = {}
     camera.position = rl.Vector3{0.2,0.4,0.2}
     camera.target = rl.Vector3{0.185,0.4,0.0}
@@ -54,7 +67,7 @@ main:: proc(){
     camera.fovy = 90.0
     camera.projection = .PERSPECTIVE
 
-    model := generate_map("../../resources/Odin_Test_Level.png","../../resources/cubicmap_atlas.png")
+    model := generate_map("../../resources/Odin_Test_Level.png","../../resources/Dungeon_Map_Atlas.png")
 
     map_Position : rl.Vector3 = {-16.0,0.0,-8.0}
 
@@ -70,6 +83,28 @@ main:: proc(){
 
         player_Cell_X:= cast(c.int)(player_Position.x - map_Position.x + 0.5)
         player_Cell_Y:= cast(c.int)(player_Position.y - map_Position.z + 0.5)
+
+        //This is used to dictate which frame is being played
+
+        fmt.println("THis is the current Frame Counter: ", frame_Counter)
+        if rl.IsMouseButtonPressed(.LEFT) && !atk_active{
+            atk_active = true}
+            //current_Frame += 1
+        if atk_active {
+            frame_Counter += 1
+            if frame_Counter >= 60/frame_Speed{
+                frame_Counter = 0
+                current_Frame += 1  //// This was the original placment for it
+               // if current_Frame != 3{
+                 //   current_Frame += 1
+                 //    }
+                if current_Frame > 3 {
+                    current_Frame = 0
+                    atk_active = false
+                }
+                frame_Rect.x = cast(c.float)current_Frame*cast(c.float)sword_sprite.width/4
+                }
+        }
 
         //Out of Bounds Checker
        if player_Cell_X < 0 {
@@ -103,6 +138,9 @@ main:: proc(){
         rl.DrawTextureEx(cubicmap, rl.Vector2{cast(c.float)rl.GetScreenWidth() - cast(c.float)cubicmap.width*4.0 - 20, 20.0}, 0.0, 4.0, rl.WHITE )
         rl.DrawRectangleLines(rl.GetScreenWidth() - cubicmap.width*4 - 20, 20 , cubicmap.width*4, cubicmap.height*4, rl.GREEN)
 
+        //Draw Sword
+        rl.DrawTextureRec(sword_sprite,frame_Rect,position,rl.WHITE)
+
         rl.DrawRectangle(rl.GetScreenWidth() - cubicmap.width*4 - 20 + player_Cell_X*4 , 20 + player_Cell_Y*4, 4, 4, rl.RED)
         rl.DrawFPS(10,10)
 
@@ -112,6 +150,7 @@ main:: proc(){
 
     rl.UnloadImageColors(map_Pixels)
     rl.UnloadTexture(cubicmap)
+    rl.UnloadTexture(sword_sprite)
     rl.UnloadModel(model)
     rl.CloseWindow()
 } //end
