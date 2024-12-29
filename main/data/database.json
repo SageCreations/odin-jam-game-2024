@@ -238,7 +238,8 @@
 					0.20000000,
 					8.31561947
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -246,7 +247,8 @@
 					0.20000000,
 					37.49721146
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -254,7 +256,8 @@
 					0.20000000,
 					34.85842514
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -262,7 +265,8 @@
 					0.20000000,
 					49.09848022
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -270,7 +274,8 @@
 					0.20000000,
 					51.89524078
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -278,7 +283,8 @@
 					0.20000000,
 					52.07669449
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -286,7 +292,8 @@
 					0.20000000,
 					4.50491619
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -294,7 +301,8 @@
 					0.20000000,
 					6.32596397
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -302,7 +310,8 @@
 					0.20000000,
 					7.35490608
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -310,7 +319,8 @@
 					0.20000000,
 					26.73706818
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -318,7 +328,8 @@
 					0.20000000,
 					26.55116653
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -326,7 +337,8 @@
 					0.20000000,
 					29.16853714
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -334,7 +346,8 @@
 					0.20000000,
 					-6.65401220
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -342,7 +355,8 @@
 					0.20000000,
 					-6.96011162
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -350,7 +364,8 @@
 					0.20000000,
 					45.90374374
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -358,7 +373,8 @@
 					0.20000000,
 					10.87434578
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -366,7 +382,8 @@
 					0.20000000,
 					18.98770332
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -374,7 +391,8 @@
 					0.20000000,
 					8.40418625
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -382,7 +400,8 @@
 					0.20000000,
 					6.90796089
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -390,7 +409,8 @@
 					0.20000000,
 					12.66788864
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -398,7 +418,8 @@
 					0.20000000,
 					20.10983276
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			}
 		],
 		"win_location": [
@@ -411,9 +432,9 @@
 		"player": {
 			"health": 100,
 			"position": [
-				-14.55500031,
+				-14.51501274,
 				0.40000001,
-				52.00099945
+				49.42098618
 			],
 			"attack": 20
 		},
@@ -646,7 +667,8 @@
 					0.20000000,
 					8.31561947
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -654,7 +676,8 @@
 					0.20000000,
 					37.49721146
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -662,7 +685,8 @@
 					0.20000000,
 					34.85842514
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -670,7 +694,8 @@
 					0.20000000,
 					49.09848022
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -678,7 +703,8 @@
 					0.20000000,
 					51.89524078
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -686,7 +712,8 @@
 					0.20000000,
 					52.07669449
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -694,7 +721,8 @@
 					0.20000000,
 					4.50491619
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -702,7 +730,8 @@
 					0.20000000,
 					6.32596397
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -710,7 +739,8 @@
 					0.20000000,
 					7.35490608
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -718,7 +748,8 @@
 					0.20000000,
 					26.73706818
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -726,7 +757,8 @@
 					0.20000000,
 					26.55116653
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -734,7 +766,8 @@
 					0.20000000,
 					29.16853714
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -742,7 +775,8 @@
 					0.20000000,
 					-6.65401220
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -750,7 +784,8 @@
 					0.20000000,
 					-6.96011162
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -758,7 +793,8 @@
 					0.20000000,
 					45.90374374
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -766,7 +802,8 @@
 					0.20000000,
 					10.87434578
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -774,7 +811,8 @@
 					0.20000000,
 					18.98770332
 				],
-				"item_type": 0
+				"item_type": 1,
+				"usable": true
 			},
 			{
 				"position": [
@@ -782,7 +820,8 @@
 					0.20000000,
 					8.40418625
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -790,7 +829,8 @@
 					0.20000000,
 					6.90796089
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -798,7 +838,8 @@
 					0.20000000,
 					12.66788864
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			},
 			{
 				"position": [
@@ -806,7 +847,8 @@
 					0.20000000,
 					20.10983276
 				],
-				"item_type": 1
+				"item_type": 0,
+				"usable": true
 			}
 		],
 		"win_location": [
