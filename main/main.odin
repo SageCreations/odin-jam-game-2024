@@ -42,7 +42,14 @@ main :: proc() {
     //rl.SetMouseCursor(.CROSSHAIR)
     debug: bool = true // TODO: turn false for final build
     exitWindow: bool = false
+    rl.InitAudioDevice()
 
+    // Load player walk sound
+    playerWalkSound: rl.Sound = rl.LoadSound("../resources/sounds/player_walk.wav")
+    gameplayMusic: rl.Sound = rl.LoadSound("../resources/sounds/level_music.wav")
+    pickUpItemSound: rl.Sound = rl.LoadSound("../resources/sounds/pickup.wav") //   <-----
+    DamagedSound: rl.Sound = rl.LoadSound("../resources/sounds/enemy_hit.wav") // change pitch and reuse for player and enemy
+    enemyDamageSound: rl.Sound = rl.LoadSound("../resources/sounds/hit_sound.wav")
 
     // extract data context from project file to workwith in main loop.
     db_ctx, err := load_database_or_err()
@@ -96,7 +103,8 @@ main :: proc() {
     playerCubeSize: rl.Vector3 = { 1.0, 1.0, 1.0 }
     size: f32 = 0.5
 
-
+    isPlayerInvuln: bool = false
+    invulnCounter: int = 0
 
     isInitSetting: bool = false // for checkbox to dictate which part of the database to update
     isEditorMode: bool = false // whether we are in editor mode or not
@@ -142,9 +150,7 @@ main :: proc() {
         if rl.IsKeyPressed(.ESCAPE) || rl.WindowShouldClose() {
             exitWindow = true
         }
-        fmt.printfln("camera speed: %.02f", rl.CAMERA_MOVE_SPEED)
-        yaw:f32 = 0.0   // Horizontal rotation
-        pitch:f32 = 0.0 // Vertical rotation
+
     // Update
         //--------------------------------------------------------------------------------------------------------------
         // Player wasd controls
@@ -292,7 +298,7 @@ main :: proc() {
                     rl.Vector3{ enemy.position.x + enemyDetectSize.x/2, enemy.position.y + enemyDetectSize.y/2, enemy.position.z + enemyDetectSize.z/2 }
                 })
             {
-                if !isEditorMode {
+                if !isEditorMode && !isGameOver {
                     old_enemy_Pos: rl.Vector3 = enemy.position
 
                     direction: rl.Vector3 = enemy.position - camera.position
@@ -330,14 +336,28 @@ main :: proc() {
                     }
 
                     if length < 1.0 {
-                        chance: int = rand.int_max(100)
-                        if chance >= 50 && chance <= 51 {
-                        // TODO: play sound
-                            isGameOver = lose_health(&db_ctx.liveGame.player)
+                        if !isPlayerInvuln {
+                            chance: int = rand.int_max(100)
+                            if chance >= 50 && chance <= 51 {
+                                rl.PlaySound(DamagedSound)
+                                isPlayerInvuln = true
+                                fmt.printfln("player cannot be hurt now!!!!")
+                                isGameOver = lose_health(&db_ctx.liveGame.player)
+                            }
+                        } else {
+                            invulnCounter += 1
+                            fmt.printfln("%d", invulnCounter)
+                            if invulnCounter >= cast(int)(5000.0*rl.GetFrameTime()) {
+                                isPlayerInvuln = false
+                                invulnCounter = 0
+                                fmt.printfln("player can be hurt again.")
+                            }
                         }
+
                         if atk_active == true && attack_counter != enemy.atk_counter {
                             enemy.health -= db_ctx.liveGame.player.attack
                             enemy.atk_counter = attack_counter
+                            rl.PlaySound(enemyDamageSound)
                             if enemy.health <= 0 {
                                 unordered_remove(&db_ctx.liveGame.enemy_list, idx)
                             }
@@ -348,7 +368,7 @@ main :: proc() {
         }
 
         // Pickup collisons
-        for item, idx in db_ctx.liveGame.item_list {
+        for &item, idx in db_ctx.liveGame.item_list {
             // Check collisions player vs enemy detection cube
             if rl.CheckCollisionBoxes(
                 rl.BoundingBox{
@@ -360,12 +380,22 @@ main :: proc() {
                     rl.Vector3{ item.position.x + pickupDetectSize.x/2, item.position.y + pickupDetectSize.y/2, item.position.z + pickupDetectSize.z/2 }
                 })
             {
-                if item.item_type == 0 { // if true then health boost else attack boost
-                    add_health(&db_ctx.liveGame.player)
-                    unordered_remove(&db_ctx.liveGame.item_list, idx)
-                } else {
-                    add_attack(&db_ctx.liveGame.player)
-                    unordered_remove(&db_ctx.liveGame.item_list, idx)
+                if item.usable {
+                    if item.item_type == 0 { // if true then health boost else attack boost
+
+                        add_health(&db_ctx.liveGame.player)
+                        item.usable = false
+                        unordered_remove(&db_ctx.liveGame.item_list, idx)
+                        rl.PlaySound(pickUpItemSound)
+
+
+
+                    } else {
+                        add_attack(&db_ctx.liveGame.player)
+                        item.usable = false
+                        unordered_remove(&db_ctx.liveGame.item_list, idx)
+                        rl.PlaySound(pickUpItemSound)
+                    }
                 }
             }
         }

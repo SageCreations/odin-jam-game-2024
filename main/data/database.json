@@ -68,7 +68,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -76,7 +77,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -84,7 +86,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -92,7 +95,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -100,7 +104,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -108,7 +113,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -116,23 +122,8 @@
 					0.49197435,
 					-0.30390453
 				],
-				"item_type": 1
-			},
-			{
-				"position": [
-					7.29290247,
-					0.46105593,
-					-2.85987377
-				],
-				"item_type": 1
-			},
-			{
-				"position": [
-					8.44085312,
-					0.42259598,
-					-1.59498835
-				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -140,7 +131,26 @@
 					0.49197435,
 					-0.30390453
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
+			},
+			{
+				"position": [
+					6.87058449,
+					0.49197435,
+					-0.30390453
+				],
+				"item_type": 1,
+				"usable": false
+			},
+			{
+				"position": [
+					6.87058449,
+					0.49197435,
+					-0.30390453
+				],
+				"item_type": 1,
+				"usable": false
 			}
 		],
 		"win_location": [
@@ -153,9 +163,9 @@
 		"player": {
 			"health": 100,
 			"position": [
-				-0.32797667,
+				7.90998936,
 				0.40000001,
-				0.30559227
+				-3.14416671
 			],
 			"attack": 20
 		},
@@ -218,7 +228,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -226,7 +237,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -234,7 +246,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -242,7 +255,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -250,7 +264,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -258,7 +273,8 @@
 					0.35098600,
 					-6.35503626
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -266,23 +282,8 @@
 					0.49197435,
 					-0.30390453
 				],
-				"item_type": 1
-			},
-			{
-				"position": [
-					7.29290247,
-					0.46105593,
-					-2.85987377
-				],
-				"item_type": 1
-			},
-			{
-				"position": [
-					8.44085312,
-					0.42259598,
-					-1.59498835
-				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
 			},
 			{
 				"position": [
@@ -290,7 +291,26 @@
 					0.49197435,
 					-0.30390453
 				],
-				"item_type": 1
+				"item_type": 1,
+				"usable": false
+			},
+			{
+				"position": [
+					6.87058449,
+					0.49197435,
+					-0.30390453
+				],
+				"item_type": 1,
+				"usable": false
+			},
+			{
+				"position": [
+					6.87058449,
+					0.49197435,
+					-0.30390453
+				],
+				"item_type": 1,
+				"usable": false
 			}
 		],
 		"win_location": [
