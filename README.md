@@ -5,10 +5,11 @@ I wasn't able to build on Windows personally, no idea what was going on there, L
 the game will not run if the .bin is not in this structure:
 ```
 <game folder>
-|- data
+|- data/
 |    |- data.json
-|
-|- main.odin
+|- resources/
+|    |- sounds/
+|- escape.bin
 ```
 
 If for whatever reason there is no data.json within the folder, the game should automatically generate one but 
