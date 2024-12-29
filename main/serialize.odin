@@ -17,7 +17,8 @@ Database :: struct {
 Enemy :: struct {
     id: string,
     health: int,
-    position: rl.Vector3
+    position: rl.Vector3,
+    atk_counter: int,
 }
 
 Player :: struct {

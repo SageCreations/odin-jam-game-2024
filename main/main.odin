@@ -60,6 +60,22 @@ main :: proc() {
     }
     fmt.printfln("database: %v", db_ctx)
 
+    //cubicmap for wall collisions
+    image : rl.Image = rl.LoadImage("../resources/Odin_Test_Level.png")               // Load cubicmap image (RAM)
+    cubicmap : rl.Texture2D = rl.LoadTextureFromImage(image)     // Convert image to texture to display (VRAM)
+    map_Pixels : [^]rl.Color = rl.LoadImageColors(image) //This is a dynamic array ptrs
+
+    //Adding the Sword_Srite
+    sword_sprite : rl.Texture2D = rl.LoadTexture("../resources/Art_Asset_Odin.png")
+    position : rl.Vector2 = {f32(rl.GetScreenWidth()/2+100), f32(rl.GetScreenHeight()/4)}
+    frame_Rect : rl.Rectangle = {0.0,0.0,cast(c.float)sword_sprite.width/4, cast(c.float)sword_sprite.height}
+    current_Frame : c.int = 0
+    //Frame Counter
+    frame_Counter : c.int = 0
+    frame_Speed : c.int = 8
+    atk_active : bool = false
+    attack_counter: int = 5
+
 
     player_init := Player{
         health = 100,
@@ -70,8 +86,8 @@ main :: proc() {
 
     camera := rl.Camera3D {
         position = db_ctx.gameInit.player.position,            // Camera position
-        target = rl.Vector3{ 0.0, 1.0, 0.0 },         // Camera looking at point
-        up = rl.Vector3{ 0.0, 1.0, 0.0 },             // Camera up vector (rotation towards target)
+        target = rl.Vector3{0.185,0.4,0.0},
+        up = rl.Vector3{0.0,1.0,0.0},                   // Camera up vector (rotation towards target)
         fovy = 90.0,                                  // Camera field-of-view Y
         projection = .PERSPECTIVE,                    // Camera projection type
     }
@@ -95,7 +111,8 @@ main :: proc() {
     pickupDetectSize: rl.Vector3 = {1.0,1.0,1.0}
 
     // generate the map
-    model: rl.Model = map_generator.generate_map("../resources/cubicmap.png", "../resources/cubicmap_atlas.png")
+    model := map_generator.generate_map("../resources/Odin_Test_Level.png","../resources/Dungeon_Map_Atlas.png")
+    map_Position : rl.Vector3 = {-16.0,0.0,-8.0}
 
     // meshcube for the win goal
     cubeMesh: rl.Mesh = rl.GenMeshCube(0.6,0.6,0.6)
@@ -112,13 +129,73 @@ main :: proc() {
     rotationAngle: f32 = 0.0                         // Rotation angle
     time: f32 = 0.0
 
+    moveSpeed: f32 = 1.8 // player move speed
+    // Mouse movement
+    mouseSensitivity: rl.Vector2 = { 0.005, 0.005 }  // Mouse sensitivity
+    angle: rl.Vector2  = { 0.0, 0.0 }                // Pitch (Y) and yaw (X) angles
+
 // GAME LOOP STARTS
     for !exitWindow {
+        old_Cam_Pos: rl.Vector3 = camera.position
+        rl.UpdateCamera(&camera, cameraMode) // update camera mode
+
         if rl.IsKeyPressed(.ESCAPE) || rl.WindowShouldClose() {
             exitWindow = true
         }
+        fmt.printfln("camera speed: %.02f", rl.CAMERA_MOVE_SPEED)
+        yaw:f32 = 0.0   // Horizontal rotation
+        pitch:f32 = 0.0 // Vertical rotation
     // Update
         //--------------------------------------------------------------------------------------------------------------
+        // Player wasd controls
+        if !isEditorMode && !isGameOver {
+            cameraMode = .CUSTOM
+
+            // Mouse support
+            mousePositionDelta: rl.Vector2 = rl.GetMouseDelta()
+            rl.CameraYaw(&camera, -mousePositionDelta.x*rl.CAMERA_MOUSE_MOVE_SENSITIVITY, false)
+            rl.CameraPitch(&camera, -mousePositionDelta.y*rl.CAMERA_MOUSE_MOVE_SENSITIVITY, true, false, false)
+
+
+            forward: rl.Vector3 = rl.Vector3Subtract(camera.target, camera.position)
+            forward = rl.Vector3Normalize(forward)
+
+            right: rl.Vector3 = rl.Vector3CrossProduct(forward, camera.up)
+            right = rl.Vector3Normalize(right)
+
+            moveDirection: rl.Vector3 = { 0.0, 0.0, 0.0 }
+            // WASD movement
+            if (rl.IsKeyDown(.W)) {
+                moveDirection = rl.Vector3Add(moveDirection, forward)
+            }
+            if (rl.IsKeyDown(.S)) {
+                moveDirection = rl.Vector3Subtract(moveDirection, forward)
+            }
+            if (rl.IsKeyDown(.A)) {
+                moveDirection = rl.Vector3Subtract(moveDirection, right)
+            }
+            if (rl.IsKeyDown(.D)) {
+                moveDirection = rl.Vector3Add(moveDirection, right)
+            }
+
+            // Normalize diagonal movement
+            if (rl.Vector3Length(moveDirection) > 0.0) {
+                moveDirection = rl.Vector3Normalize(moveDirection)
+                moveDirection.y = 0
+            }
+            // Apply movement
+            camera.position = rl.Vector3Add(camera.position, rl.Vector3Scale(moveDirection, moveSpeed * rl.GetFrameTime()))
+            camera.target = rl.Vector3Add(camera.target, rl.Vector3Scale(moveDirection, moveSpeed * rl.GetFrameTime()))
+            camera.position.y = rl.Clamp(camera.position.y, 0.4, 0.4)
+
+        }
+
+
+        player_Position : rl.Vector2 = {camera.position.x, camera.position.z}
+        player_Radius : c.float = 0.1
+        player_Cell_X:= cast(c.int)(player_Position.x - map_Position.x + 0.5)
+        player_Cell_Y:= cast(c.int)(player_Position.y - map_Position.z + 0.5)
+
         if debug {
             if rl.IsKeyPressed(.J) { // toggle between editing/play mode
                 isEditorMode = !isEditorMode
@@ -148,17 +225,62 @@ main :: proc() {
                 rl.EnableCursor()
             }
         } else {
-            cameraMode = .FIRST_PERSON
+
+            //Out of Bounds Checker for player
+            if player_Cell_X < 0 {
+                player_Cell_X = 0
+            }
+            else if player_Cell_X >= cubicmap.width{
+                player_Cell_X = cubicmap.width - 1}
+            if player_Cell_Y < 0 {
+                player_Cell_Y = 0
+            }
+            else if player_Cell_Y >= cubicmap.height{
+                player_Cell_Y = cubicmap.height - 1
+            }
+            for y: c.int = 0 ; y < cubicmap.height; y+=1 {
+                for x: c.int = 0; x < cubicmap.width; x+=1 {
+                    if (map_Pixels[y*cubicmap.width+ x].r == 255) && (rl.CheckCollisionCircleRec(player_Position,player_Radius,
+                    rl.Rectangle{map_Position.x - 0.5 + cast(c.float)x*1.0, map_Position.z - 0.5 + cast(c.float)y*1.0, 1.0, 1.0})) //This is still part of the if statement
+                    {
+                        camera.position = old_Cam_Pos
+                    }
+                }
+            }
+
 
             db_ctx.liveGame.player.position = camera.position
+
+            // attacking animation/cooldown
+            //fmt.println("THis is the current Frame Counter: ", frame_Counter)
+            if rl.IsMouseButtonPressed(.LEFT) && !atk_active{
+                atk_active = true
+                attack_counter += 1
+            }
+            //current_Frame += 1
+            if atk_active {
+                frame_Counter += 1
+                if frame_Counter >= 60/frame_Speed{
+                    frame_Counter = 0
+                    current_Frame += 1  //// This was the original placment for it
+                    // if current_Frame != 3{
+                    //   current_Frame += 1
+                    //
+                    if current_Frame > 3 {
+                        current_Frame = 0
+                        atk_active = false
+                    }
+                    frame_Rect.x = cast(c.float)current_Frame*cast(c.float)sword_sprite.width/4
+                }
+            }
         }
 
 
-        rl.UpdateCamera(&camera, cameraMode) // update camera mode
+
 
 
         // enemy behavior
-        for &enemy in db_ctx.liveGame.enemy_list {
+        for &enemy, idx in db_ctx.liveGame.enemy_list {
             // Check collisions player vs enemy detection cube
             if rl.CheckCollisionBoxes(
                 rl.BoundingBox{
@@ -171,18 +293,54 @@ main :: proc() {
                 })
             {
                 if !isEditorMode {
+                    old_enemy_Pos: rl.Vector3 = enemy.position
+
                     direction: rl.Vector3 = enemy.position - camera.position
                     length: f32 = rl.Vector3Length(direction)
 
-                    if (length > 0.7) { // Avoid division by zero
-                        direction = direction * (0.01 / length) // Normalize and scale
-                        enemy.position = enemy.position - direction
+                    enemy_Cell_X:= cast(c.int)(enemy.position.x - map_Position.x + 0.5)
+                    enemy_Cell_Y:= cast(c.int)(enemy.position.y - map_Position.z + 0.5)
+
+                    //Out of Bounds Checker for enemy
+                    if enemy_Cell_X < 0 {
+                        enemy_Cell_X = 0
                     }
+                    else if enemy_Cell_X >= cubicmap.width{
+                        enemy_Cell_X = cubicmap.width - 1}
+                    if enemy_Cell_Y < 0 {
+                        enemy_Cell_Y = 0
+                    }
+                    else if enemy_Cell_Y >= cubicmap.height{
+                        enemy_Cell_Y = cubicmap.height - 1
+                    }
+                    for y: c.int = 0 ; y < cubicmap.height; y+=1 {
+                        for x: c.int = 0; x < cubicmap.width; x+=1 {
+                            if (map_Pixels[y*cubicmap.width+ x].r == 255) && (rl.CheckCollisionCircleRec(rl.Vector2{enemy.position.x, enemy.position.z}, enemySphereSize,
+                            rl.Rectangle{map_Position.x - 0.5 + cast(c.float)x*1.0, map_Position.z - 0.5 + cast(c.float)y*1.0, 1.0, 1.0})) //This is still part of the if statement
+                            {
+                                //camera.position = old_Cam_Pos
+                                enemy.position = old_enemy_Pos
+                            } else {
+                                if (length > 0.7) { // Avoid division by zero
+                                    direction = direction * (0.01 / length) // Normalize and scale
+                                    enemy.position = enemy.position - direction
+                                }
+                            }
+                        }
+                    }
+
                     if length < 1.0 {
                         chance: int = rand.int_max(100)
                         if chance >= 50 && chance <= 51 {
-                            // TODO: play sound
+                        // TODO: play sound
                             isGameOver = lose_health(&db_ctx.liveGame.player)
+                        }
+                        if atk_active == true && attack_counter != enemy.atk_counter {
+                            enemy.health -= db_ctx.liveGame.player.attack
+                            enemy.atk_counter = attack_counter
+                            if enemy.health <= 0 {
+                                unordered_remove(&db_ctx.liveGame.enemy_list, idx)
+                            }
                         }
                     }
                 }
@@ -227,8 +385,6 @@ main :: proc() {
             isGameOver = true
         }
 
-
-
         //--------------------------------------------------------------------------------------------------------------
 
 
@@ -241,11 +397,12 @@ main :: proc() {
         rl.BeginMode3D(camera)
 
         // draw the map
-        rl.DrawModel(model, rl.Vector3{-16.0, 0.0, -8.0 }, 1.0, rl.WHITE)
+        rl.DrawModel(model, map_Position, 1.0, rl.WHITE)
 
         // draw enemies
         for enemy in db_ctx.liveGame.enemy_list {
             rl.DrawSphereEx(enemy.position, enemySphereSize, 16, 16, rl.ORANGE)
+
             if debug {
                 rl.DrawCubeWiresV(enemy.position, enemyDetectSize, rl.GREEN)
             }
@@ -280,7 +437,7 @@ main :: proc() {
 
     //GUI CODE
         //--------------------------------------------------------------------------------------------------------------
-        rl.DrawFPS(rl.GetScreenWidth()-100, 10)
+        rl.DrawFPS(rl.GetScreenWidth()/2, 10)
 
         if isEditorMode {
             // camera dubug info
@@ -353,7 +510,20 @@ main :: proc() {
             rl.DrawRectangleLines(10, 10, 250, 100, rl.BLACK)
             rl.DrawText(rl.TextFormat("HP: %d/100", db_ctx.liveGame.player.health), 20, 15, 30, (db_ctx.liveGame.player.health > 50) ? rl.GREEN: rl.RED)
             rl.DrawText(rl.TextFormat("Attack: %d%%", db_ctx.liveGame.player.attack), 20, 45, 30, rl.YELLOW)
+
+            // minimap
+            rl.DrawTextureEx(cubicmap, rl.Vector2{cast(c.float)rl.GetScreenWidth() - cast(c.float)cubicmap.width*4.0 - 20, 20.0}, 0.0, 4.0, rl.WHITE )
+            rl.DrawRectangleLines(rl.GetScreenWidth() - cubicmap.width*4 - 20, 20 , cubicmap.width*4, cubicmap.height*4, rl.GREEN)
+
+            //Draw Sword
+            rl.DrawTextureRec(sword_sprite,frame_Rect,position,rl.WHITE)
+
+            // red dot on minimap
+            rl.DrawRectangle(rl.GetScreenWidth() - cubicmap.width*4 - 20 + player_Cell_X*4 , 20 + player_Cell_Y*4, 4, 4, rl.RED)
+
+
         }
+
 
 
 
