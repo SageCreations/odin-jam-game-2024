@@ -60,7 +60,7 @@ main :: proc() {
     pickUpItemSound: rl.Sound = rl.LoadSound("resources/sounds/pickup.wav") //   <-----
     DamagedSound: rl.Sound = rl.LoadSound("resources/sounds/enemy_hit.wav") // change pitch and reuse for player and enemy
     enemyDamageSound: rl.Sound = rl.LoadSound("resources/sounds/hit_sound.wav")
-    winMusic: rl.Music = rl.LoadMusicStream("resources/sounds/CongratsMusicGame.wav")
+    winMusic: rl.Music = rl.LoadMusicStream("resources/sounds/Car_Game_Music.wav")
     loseMusic: rl.Music = rl.LoadMusicStream("resources/sounds/RocketGame_MenuMusic.wav")
 
     rl.PlayMusicStream(gameplayMusic)
@@ -93,7 +93,7 @@ main :: proc() {
 
     //Adding the Sword_Srite
     sword_sprite : rl.Texture2D = rl.LoadTexture("resources/Art_Asset_Odin.png")
-    position : rl.Vector2 = {f32(rl.GetScreenWidth()/2+100), f32(rl.GetScreenHeight()/4)}
+    position : rl.Vector2 = {f32(rl.GetScreenWidth()/2), f32(rl.GetScreenHeight()/4)}
     frame_Rect : rl.Rectangle = {0.0,0.0,cast(c.float)sword_sprite.width/4, cast(c.float)sword_sprite.height}
     current_Frame : c.int = 0
     //Frame Counter
@@ -180,6 +180,7 @@ main :: proc() {
         // Player wasd controls
         if !isEditorMode && !isGameOver {
             rl.UpdateMusicStream(gameplayMusic)   // Update music buffer with new stream data
+
             cameraMode = .CUSTOM
 
             // Mouse support
@@ -397,18 +398,20 @@ main :: proc() {
         }
 
         // win goal collision check
-        if rl.CheckCollisionBoxes(rl.BoundingBox{ rl.Vector3{ db_ctx.liveGame.player.position.x - playerCubeSize.x/2, db_ctx.liveGame.player.position.y - playerCubeSize.y/2, db_ctx.liveGame.player.position.z - playerCubeSize.z/2 }, rl.Vector3{ db_ctx.liveGame.player.position.x + playerCubeSize.x/2, db_ctx.liveGame.player.position.y + playerCubeSize.y/2, db_ctx.liveGame.player.position.z + playerCubeSize.z/2 } }, rl.BoundingBox{ rl.Vector3{ db_ctx.liveGame.win_location.x - pickupDetectSize.x/2, db_ctx.liveGame.win_location.y - pickupDetectSize.y/2, db_ctx.liveGame.win_location.z - pickupDetectSize.z/2 }, rl.Vector3{ db_ctx.liveGame.win_location.x + pickupDetectSize.x/2, db_ctx.liveGame.win_location.y + pickupDetectSize.y/2, db_ctx.liveGame.win_location.z + pickupDetectSize.z/2 } }){
-            isWin = true
-            isGameOver = true
-            rl.StopMusicStream(gameplayMusic)
-            rl.PlayMusicStream(winMusic)
+        if !isWin {
+            if rl.CheckCollisionBoxes(rl.BoundingBox{ rl.Vector3{ db_ctx.liveGame.player.position.x - playerCubeSize.x/2, db_ctx.liveGame.player.position.y - playerCubeSize.y/2, db_ctx.liveGame.player.position.z - playerCubeSize.z/2 }, rl.Vector3{ db_ctx.liveGame.player.position.x + playerCubeSize.x/2, db_ctx.liveGame.player.position.y + playerCubeSize.y/2, db_ctx.liveGame.player.position.z + playerCubeSize.z/2 } }, rl.BoundingBox{ rl.Vector3{ db_ctx.liveGame.win_location.x - pickupDetectSize.x/2, db_ctx.liveGame.win_location.y - pickupDetectSize.y/2, db_ctx.liveGame.win_location.z - pickupDetectSize.z/2 }, rl.Vector3{ db_ctx.liveGame.win_location.x + pickupDetectSize.x/2, db_ctx.liveGame.win_location.y + pickupDetectSize.y/2, db_ctx.liveGame.win_location.z + pickupDetectSize.z/2 } }){
+                isWin = true
+                isGameOver = true
+                rl.StopMusicStream(gameplayMusic)
+                rl.PlayMusicStream(winMusic)
+            }
         }
 
         if isGameOver {
-            if isWin {
-                rl.UpdateMusicStream(winMusic)
-            } else {
+            if !isWin {
                 rl.UpdateMusicStream(loseMusic)
+            } else {
+                rl.UpdateMusicStream(winMusic)
             }
         }
 
@@ -461,9 +464,10 @@ main :: proc() {
 
     //GUI CODE
         //--------------------------------------------------------------------------------------------------------------
-        rl.DrawFPS(rl.GetScreenWidth()/2, 10)
+
 
         if isEditorMode {
+            rl.DrawFPS(rl.GetScreenWidth()/2, 10)
             // camera dubug info
             rl.DrawRectangle(10, 10, 250, 100, rl.Fade(rl.SKYBLUE, 0.7))
             rl.DrawRectangleLines(10, 10, 250, 100, rl.BLUE)
@@ -508,7 +512,6 @@ main :: proc() {
             }
 
         } else if isGameOver {
-            //TODO: let user choose to restart or exit
             rl.DrawRectangle(0, 0, rl.GetScreenWidth(), rl.GetScreenHeight(), rl.Fade(rl.BLACK, 0.8))
 
             if isWin {
@@ -527,22 +530,24 @@ main :: proc() {
                 db_ctx, _ = load_database_or_err()
                 isGameOver = false
                 isWin = false
-                if isWin {
-                    rl.StopMusicStream(winMusic)
-                } else {
+                if !isWin {
                     rl.StopMusicStream(loseMusic)
+                } else {
+                    rl.StopMusicStream(winMusic)
                 }
                 rl.PlayMusicStream(gameplayMusic)
 
-                if !rl.IsCursorHidden() { rl.HideCursor() } // TODO: look into if missing something that causes mouse to escape
+                if !rl.IsCursorHidden() {
+                    rl.DisableCursor()
+                }
             }
 
 
         } else { // Gameplay HUD
-            rl.DrawRectangle(10, 10, 250, 100, rl.Fade(rl.DARKGRAY, 0.95))
-            rl.DrawRectangleLines(10, 10, 250, 100, rl.BLACK)
-            rl.DrawText(rl.TextFormat("HP: %d/100", db_ctx.liveGame.player.health), 20, 15, 30, (db_ctx.liveGame.player.health > 50) ? rl.GREEN: rl.RED)
-            rl.DrawText(rl.TextFormat("Attack: %d%%", db_ctx.liveGame.player.attack), 20, 45, 30, rl.YELLOW)
+            rl.DrawRectangle(20, 20, 200, 80, rl.Fade(rl.DARKGRAY, 0.90))
+            rl.DrawRectangleLines(20, 20, 200, 80, rl.BLACK)
+            rl.DrawText(rl.TextFormat("HP: %d/100", db_ctx.liveGame.player.health), 30, 25, 30, (db_ctx.liveGame.player.health > 50) ? rl.GREEN: rl.RED)
+            rl.DrawText(rl.TextFormat("Attack: %d%%", db_ctx.liveGame.player.attack), 30, 62, 30, rl.RED)
 
             // minimap
             rl.DrawTextureEx(cubicmap, rl.Vector2{cast(c.float)rl.GetScreenWidth() - cast(c.float)cubicmap.width*4.0 - 20, 20.0}, 0.0, 4.0, rl.WHITE )
