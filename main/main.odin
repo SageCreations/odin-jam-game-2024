@@ -65,6 +65,12 @@ main :: proc() {
     cubicmap : rl.Texture2D = rl.LoadTextureFromImage(image)     // Convert image to texture to display (VRAM)
     map_Pixels : [^]rl.Color = rl.LoadImageColors(image) //This is a dynamic array ptrs
 
+    //Adding the Billboard for the Health and Attack Boost
+    bill_board_health : rl.Texture2D = rl.LoadTexture("../resources/Health_Pick_Up.png")
+    bill_board_attack : rl.Texture2D = rl.LoadTexture("../resources/Attack_Pick_Up.png")
+    bill_board_enemy : rl.Texture2D = rl.LoadTexture("../resources/Enemy.png")
+    bill_up : rl.Vector3 = {0.0,2.0,0.0}
+
     //Adding the Sword_Srite
     sword_sprite : rl.Texture2D = rl.LoadTexture("../resources/Art_Asset_Odin.png")
     position : rl.Vector2 = {f32(rl.GetScreenWidth()/2+100), f32(rl.GetScreenHeight()/4)}
@@ -80,7 +86,7 @@ main :: proc() {
     player_init := Player{
         health = 100,
         attack = 20,
-        position = {0.2, 0.4, 0.2}
+        position = {-14.555, 0.4, 52.001}
     }
     db_ctx.gameInit.player = player_init
 
@@ -120,9 +126,15 @@ main :: proc() {
 
 
     enemy_init: [dynamic]Enemy
-    for enemy in db_ctx.gameInit.enemy_list {
+    for &enemy in db_ctx.gameInit.enemy_list {
+        enemy.position.y = 0.2
         append(&enemy_init, enemy)
     }
+
+    for &item in db_ctx.gameInit.item_list {
+        item.position.y = 0.2
+    }
+
     db_ctx.liveGame = db_ctx.gameInit
 
 
@@ -401,8 +413,8 @@ main :: proc() {
 
         // draw enemies
         for enemy in db_ctx.liveGame.enemy_list {
-            rl.DrawSphereEx(enemy.position, enemySphereSize, 16, 16, rl.ORANGE)
-
+            //rl.DrawSphereEx(enemy.position, enemySphereSize, 16, 16, rl.ORANGE)
+            rl.DrawBillboard(camera, bill_board_enemy ,enemy.position,1,rl.WHITE)
             if debug {
                 rl.DrawCubeWiresV(enemy.position, enemyDetectSize, rl.GREEN)
             }
@@ -410,7 +422,8 @@ main :: proc() {
 
         // Draw items
         for item in db_ctx.liveGame.item_list {
-            rl.DrawCubeV(item.position, {0.3,0.3,0.3}, (item.item_type == 1) ? rl.RED : rl.GREEN)
+            //rl.DrawCubeV(item.position, {0.3,0.3,0.3}, (item.item_type == 1) ? rl.RED : rl.GREEN)
+            rl.DrawBillboard(camera, (item.item_type == 1) ? bill_board_health : bill_board_attack,item.position,0.25,rl.WHITE)
             if debug {
                 rl.DrawCubeWiresV(item.position, pickupDetectSize, rl.GREEN)
             }
@@ -427,10 +440,6 @@ main :: proc() {
 
         cubeModel.transform = rl.MatrixMultiply(rl.MatrixRotateY(rotationAngle * rl.DEG2RAD), cubeModel.transform)// something like that
         rl.DrawModelEx(cubeModel, {db_ctx.liveGame.win_location.x, (db_ctx.liveGame.win_location.y+.5)+offset, db_ctx.liveGame.win_location.z}, {rotationAngle, rotationAngle, rotationAngle}, 0.0, {1.0, 1.0, 1.0}, rl.GOLD)
-
-
-
-
 
         rl.EndMode3D()
         //--------------------------------------------------------------------------------------------------------------
