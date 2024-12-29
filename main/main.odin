@@ -2,18 +2,11 @@ package main
 
 //import "core:fmt"
 import rl "vendor:raylib"
-import "../map_generator"
 import "core:fmt"
 import "core:c"
-import "core:sys/posix"
 import "core:os"
 import "core:math/rand"
 import "core:c/libc"
-
-ControlPoint :: struct {
-    start: rl.Vector2,
-    end:   rl.Vector2,
-}
 
 
 ItemType :: enum {
@@ -33,25 +26,42 @@ GameData :: struct {
 }
 
 
+// simple map generator, path for the image to generate map from and path for an atlas to apply textures to models
+generate_map :: proc(cubicmap_path: cstring, atlas_path: cstring) -> rl.Model {
+    image: rl.Image = rl.LoadImage(cubicmap_path)               // Load cubicmap image (RAM)
+    //cubicmap: rl.Texture2D = rl.LoadTextureFromImage(image)     // Convert image to texture to display (VRAM)
+
+    mesh: rl.Mesh = rl.GenMeshCubicmap(image, rl.Vector3{ 1.0, 1.0, 1.0 })
+    model: rl.Model = rl.LoadModelFromMesh(mesh)
+
+    // NOTE: By default each cube is mapped to one part of texture atlas
+    texture: rl.Texture2D = rl.LoadTexture(atlas_path)    // Load map texture
+    model.materials[0].maps[rl.MaterialMapIndex.ALBEDO].texture = texture    // Set map diffuse texture
+
+    rl.UnloadImage(image)     // Unload cubesmap image from RAM, already uploaded to VRAM
+
+    return model
+}
+
 
 main :: proc() {
     rl.SetConfigFlags({.VSYNC_HINT, .MSAA_4X_HINT})
-    rl.InitWindow(1920, 1080, "raylib [models] example - cubesmap loading and drawing")
+    rl.InitWindow(1600, 900, "Escape")
     rl.SetTargetFPS(60)
     rl.DisableCursor()
     //rl.SetMouseCursor(.CROSSHAIR)
-    debug: bool = true // TODO: turn false for final build
+    debug: bool = false // TODO: turn false for final build
     exitWindow: bool = false
     rl.InitAudioDevice()
 
     // Load player walk sound
-    playerWalkSound: rl.Sound = rl.LoadSound("../resources/sounds/player_walk.wav")
-    gameplayMusic: rl.Music = rl.LoadMusicStream("../resources/sounds/level_music.wav")
-    pickUpItemSound: rl.Sound = rl.LoadSound("../resources/sounds/pickup.wav") //   <-----
-    DamagedSound: rl.Sound = rl.LoadSound("../resources/sounds/enemy_hit.wav") // change pitch and reuse for player and enemy
-    enemyDamageSound: rl.Sound = rl.LoadSound("../resources/sounds/hit_sound.wav")
-    winMusic: rl.Music = rl.LoadMusicStream("../resources/sounds/CongratsMusicGame.wav")
-    loseMusic: rl.Music = rl.LoadMusicStream("../resources/sounds/RocketGame_MenuMusic.wav")
+    //playerWalkSound: rl.Sound = rl.LoadSound("../resources/sounds/player_walk.wav") //TODO: add player walk
+    gameplayMusic: rl.Music = rl.LoadMusicStream("resources/sounds/level_music.wav")
+    pickUpItemSound: rl.Sound = rl.LoadSound("resources/sounds/pickup.wav") //   <-----
+    DamagedSound: rl.Sound = rl.LoadSound("resources/sounds/enemy_hit.wav") // change pitch and reuse for player and enemy
+    enemyDamageSound: rl.Sound = rl.LoadSound("resources/sounds/hit_sound.wav")
+    winMusic: rl.Music = rl.LoadMusicStream("resources/sounds/CongratsMusicGame.wav")
+    loseMusic: rl.Music = rl.LoadMusicStream("resources/sounds/RocketGame_MenuMusic.wav")
 
     rl.PlayMusicStream(gameplayMusic)
 
@@ -72,18 +82,17 @@ main :: proc() {
     fmt.printfln("database: %v", db_ctx)
 
     //cubicmap for wall collisions
-    image : rl.Image = rl.LoadImage("../resources/Odin_Test_Level.png")               // Load cubicmap image (RAM)
+    image : rl.Image = rl.LoadImage("resources/Odin_Test_Level.png")               // Load cubicmap image (RAM)
     cubicmap : rl.Texture2D = rl.LoadTextureFromImage(image)     // Convert image to texture to display (VRAM)
     map_Pixels : [^]rl.Color = rl.LoadImageColors(image) //This is a dynamic array ptrs
 
     //Adding the Billboard for the Health and Attack Boost
-    bill_board_health : rl.Texture2D = rl.LoadTexture("../resources/Health_Pick_Up.png")
-    bill_board_attack : rl.Texture2D = rl.LoadTexture("../resources/Attack_Pick_Up.png")
-    bill_board_enemy : rl.Texture2D = rl.LoadTexture("../resources/Enemy.png")
-    bill_up : rl.Vector3 = {0.0,2.0,0.0}
+    bill_board_health : rl.Texture2D = rl.LoadTexture("resources/Health_Pick_Up.png")
+    bill_board_attack : rl.Texture2D = rl.LoadTexture("resources/Attack_Pick_Up.png")
+    bill_board_enemy : rl.Texture2D = rl.LoadTexture("resources/Enemy.png")
 
     //Adding the Sword_Srite
-    sword_sprite : rl.Texture2D = rl.LoadTexture("../resources/Art_Asset_Odin.png")
+    sword_sprite : rl.Texture2D = rl.LoadTexture("resources/Art_Asset_Odin.png")
     position : rl.Vector2 = {f32(rl.GetScreenWidth()/2+100), f32(rl.GetScreenHeight()/4)}
     frame_Rect : rl.Rectangle = {0.0,0.0,cast(c.float)sword_sprite.width/4, cast(c.float)sword_sprite.height}
     current_Frame : c.int = 0
@@ -97,7 +106,7 @@ main :: proc() {
     player_init := Player{
         health = 100,
         attack = 20,
-        position = {-14.555, 0.4, 52.001}
+        position = {-14.555, 0.4, 52.001},
     }
     db_ctx.gameInit.player = player_init
 
@@ -111,7 +120,6 @@ main :: proc() {
     cameraMode: rl.CameraMode = .FIRST_PERSON
 
     playerCubeSize: rl.Vector3 = { 1.0, 1.0, 1.0 }
-    size: f32 = 0.5
 
     isPlayerInvuln: bool = false
     invulnCounter: int = 0
@@ -129,7 +137,7 @@ main :: proc() {
     pickupDetectSize: rl.Vector3 = {1.0,1.0,1.0}
 
     // generate the map
-    model := map_generator.generate_map("../resources/Odin_Test_Level.png","../resources/Dungeon_Map_Atlas.png")
+    model := generate_map("resources/Odin_Test_Level.png","resources/Dungeon_Map_Atlas.png")
     map_Position : rl.Vector3 = {-16.0,0.0,-8.0}
 
     // meshcube for the win goal
@@ -155,9 +163,6 @@ main :: proc() {
     time: f32 = 0.0
 
     moveSpeed: f32 = 2.5 // player move speed
-    // Mouse movement
-    mouseSensitivity: rl.Vector2 = { 0.005, 0.005 }  // Mouse sensitivity
-    angle: rl.Vector2  = { 0.0, 0.0 }                // Pitch (Y) and yaw (X) angles
 
 // GAME LOOP STARTS
     for !exitWindow {
@@ -254,20 +259,17 @@ main :: proc() {
             //Out of Bounds Checker for player
             if player_Cell_X < 0 {
                 player_Cell_X = 0
-            }
-            else if player_Cell_X >= cubicmap.width{
+            } else if player_Cell_X >= cubicmap.width {
                 player_Cell_X = cubicmap.width - 1}
             if player_Cell_Y < 0 {
                 player_Cell_Y = 0
-            }
-            else if player_Cell_Y >= cubicmap.height{
+            } else if player_Cell_Y >= cubicmap.height{
                 player_Cell_Y = cubicmap.height - 1
             }
             for y: c.int = 0 ; y < cubicmap.height; y+=1 {
                 for x: c.int = 0; x < cubicmap.width; x+=1 {
                     if (map_Pixels[y*cubicmap.width+ x].r == 255) && (rl.CheckCollisionCircleRec(player_Position,player_Radius,
-                    rl.Rectangle{map_Position.x - 0.5 + cast(c.float)x*1.0, map_Position.z - 0.5 + cast(c.float)y*1.0, 1.0, 1.0})) //This is still part of the if statement
-                    {
+                    rl.Rectangle{map_Position.x - 0.5 + cast(c.float)x*1.0, map_Position.z - 0.5 + cast(c.float)y*1.0, 1.0, 1.0})) {
                         camera.position = old_Cam_Pos
                     }
                 }
@@ -303,16 +305,7 @@ main :: proc() {
         // enemy behavior
         for &enemy, idx in db_ctx.liveGame.enemy_list {
             // Check collisions player vs enemy detection cube
-            if rl.CheckCollisionBoxes(
-                rl.BoundingBox{
-                    rl.Vector3{ db_ctx.liveGame.player.position.x - playerCubeSize.x/2, db_ctx.liveGame.player.position.y - playerCubeSize.y/2, db_ctx.liveGame.player.position.z - playerCubeSize.z/2 },
-                    rl.Vector3{ db_ctx.liveGame.player.position.x + playerCubeSize.x/2, db_ctx.liveGame.player.position.y + playerCubeSize.y/2, db_ctx.liveGame.player.position.z + playerCubeSize.z/2 }
-                },
-                rl.BoundingBox{
-                    rl.Vector3{ enemy.position.x - enemyDetectSize.x/2, enemy.position.y - enemyDetectSize.y/2, enemy.position.z - enemyDetectSize.z/2 },
-                    rl.Vector3{ enemy.position.x + enemyDetectSize.x/2, enemy.position.y + enemyDetectSize.y/2, enemy.position.z + enemyDetectSize.z/2 }
-                })
-            {
+            if rl.CheckCollisionBoxes(rl.BoundingBox{ rl.Vector3{ db_ctx.liveGame.player.position.x - playerCubeSize.x/2, db_ctx.liveGame.player.position.y - playerCubeSize.y/2, db_ctx.liveGame.player.position.z - playerCubeSize.z/2 }, rl.Vector3{ db_ctx.liveGame.player.position.x + playerCubeSize.x/2, db_ctx.liveGame.player.position.y + playerCubeSize.y/2, db_ctx.liveGame.player.position.z + playerCubeSize.z/2 } }, rl.BoundingBox{ rl.Vector3{ enemy.position.x - enemyDetectSize.x/2, enemy.position.y - enemyDetectSize.y/2, enemy.position.z - enemyDetectSize.z/2 }, rl.Vector3{ enemy.position.x + enemyDetectSize.x/2, enemy.position.y + enemyDetectSize.y/2, enemy.position.z + enemyDetectSize.z/2 } }){
                 if !isEditorMode && !isGameOver {
                     old_enemy_Pos: rl.Vector3 = enemy.position
 
@@ -325,20 +318,16 @@ main :: proc() {
                     //Out of Bounds Checker for enemy
                     if enemy_Cell_X < 0 {
                         enemy_Cell_X = 0
-                    }
-                    else if enemy_Cell_X >= cubicmap.width{
+                    }else if enemy_Cell_X >= cubicmap.width{
                         enemy_Cell_X = cubicmap.width - 1}
                     if enemy_Cell_Y < 0 {
                         enemy_Cell_Y = 0
-                    }
-                    else if enemy_Cell_Y >= cubicmap.height{
+                    }else if enemy_Cell_Y >= cubicmap.height{
                         enemy_Cell_Y = cubicmap.height - 1
                     }
                     for y: c.int = 0 ; y < cubicmap.height; y+=1 {
                         for x: c.int = 0; x < cubicmap.width; x+=1 {
-                            if (map_Pixels[y*cubicmap.width+ x].r == 255) && (rl.CheckCollisionCircleRec(rl.Vector2{enemy.position.x, enemy.position.z}, enemySphereSize,
-                            rl.Rectangle{map_Position.x - 0.5 + cast(c.float)x*1.0, map_Position.z - 0.5 + cast(c.float)y*1.0, 1.0, 1.0})) //This is still part of the if statement
-                            {
+                            if (map_Pixels[y*cubicmap.width+ x].r == 255) && (rl.CheckCollisionCircleRec(rl.Vector2{enemy.position.x, enemy.position.z}, enemySphereSize, rl.Rectangle{map_Position.x - 0.5 + cast(c.float)x*1.0, map_Position.z - 0.5 + cast(c.float)y*1.0, 1.0, 1.0})) {
                                 enemy.position = old_enemy_Pos
                             } else {
                                 if (length > 0.7) { // Avoid division by zero
@@ -354,10 +343,10 @@ main :: proc() {
                         if !isPlayerInvuln {
                             chance: int = rand.int_max(100)
                             if chance >= 50 && chance <= 51 {
-                                fmt.printfln("player was hit")
+                                //fmt.printfln("player was hit")
                                 rl.PlaySound(DamagedSound)
                                 isPlayerInvuln = true
-                                fmt.printfln("player cannot be hurt now!!!!")
+                                //fmt.printfln("player cannot be hurt now!!!!")
                                 isGameOver = lose_health(&db_ctx.liveGame.player)
                                 if isGameOver {
                                     rl.StopMusicStream(gameplayMusic)
@@ -366,11 +355,11 @@ main :: proc() {
                             }
                         } else {
                             invulnCounter += 1
-                            fmt.printfln("%d", invulnCounter)
+                            //fmt.printfln("%d", invulnCounter)
                             if invulnCounter >= cast(int)(5000.0*rl.GetFrameTime()) {
                                 isPlayerInvuln = false
                                 invulnCounter = 0
-                                fmt.printfln("player can be hurt again.")
+                                //fmt.printfln("player can be hurt again.")
                             }
                         }
 
@@ -390,16 +379,7 @@ main :: proc() {
         // Pickup collisons
         for &item, idx in db_ctx.liveGame.item_list {
             // Check collisions player vs enemy detection cube
-            if rl.CheckCollisionBoxes(
-                rl.BoundingBox{
-                    rl.Vector3{ db_ctx.liveGame.player.position.x - playerCubeSize.x/2, db_ctx.liveGame.player.position.y - playerCubeSize.y/2, db_ctx.liveGame.player.position.z - playerCubeSize.z/2 },
-                    rl.Vector3{ db_ctx.liveGame.player.position.x + playerCubeSize.x/2, db_ctx.liveGame.player.position.y + playerCubeSize.y/2, db_ctx.liveGame.player.position.z + playerCubeSize.z/2 }
-                },
-                rl.BoundingBox{
-                    rl.Vector3{ item.position.x - pickupDetectSize.x/2, item.position.y - pickupDetectSize.y/2, item.position.z - pickupDetectSize.z/2 },
-                    rl.Vector3{ item.position.x + pickupDetectSize.x/2, item.position.y + pickupDetectSize.y/2, item.position.z + pickupDetectSize.z/2 }
-                })
-            {
+            if rl.CheckCollisionBoxes(rl.BoundingBox{ rl.Vector3{ db_ctx.liveGame.player.position.x - playerCubeSize.x/2, db_ctx.liveGame.player.position.y - playerCubeSize.y/2, db_ctx.liveGame.player.position.z - playerCubeSize.z/2 }, rl.Vector3{ db_ctx.liveGame.player.position.x + playerCubeSize.x/2, db_ctx.liveGame.player.position.y + playerCubeSize.y/2, db_ctx.liveGame.player.position.z + playerCubeSize.z/2 } }, rl.BoundingBox{ rl.Vector3{ item.position.x - pickupDetectSize.x/2, item.position.y - pickupDetectSize.y/2, item.position.z - pickupDetectSize.z/2 }, rl.Vector3{ item.position.x + pickupDetectSize.x/2, item.position.y + pickupDetectSize.y/2, item.position.z + pickupDetectSize.z/2 } }){
                 if item.usable {
                     if item.item_type == 0 { // if true then health boost else attack boost
                         add_health(&db_ctx.liveGame.player)
@@ -417,16 +397,7 @@ main :: proc() {
         }
 
         // win goal collision check
-        if rl.CheckCollisionBoxes(
-            rl.BoundingBox{
-                rl.Vector3{ db_ctx.liveGame.player.position.x - playerCubeSize.x/2, db_ctx.liveGame.player.position.y - playerCubeSize.y/2, db_ctx.liveGame.player.position.z - playerCubeSize.z/2 },
-                rl.Vector3{ db_ctx.liveGame.player.position.x + playerCubeSize.x/2, db_ctx.liveGame.player.position.y + playerCubeSize.y/2, db_ctx.liveGame.player.position.z + playerCubeSize.z/2 }
-            },
-            rl.BoundingBox{
-                rl.Vector3{ db_ctx.liveGame.win_location.x - pickupDetectSize.x/2, db_ctx.liveGame.win_location.y - pickupDetectSize.y/2, db_ctx.liveGame.win_location.z - pickupDetectSize.z/2 },
-                rl.Vector3{ db_ctx.liveGame.win_location.x + pickupDetectSize.x/2, db_ctx.liveGame.win_location.y + pickupDetectSize.y/2, db_ctx.liveGame.win_location.z + pickupDetectSize.z/2 }
-            })
-        {
+        if rl.CheckCollisionBoxes(rl.BoundingBox{ rl.Vector3{ db_ctx.liveGame.player.position.x - playerCubeSize.x/2, db_ctx.liveGame.player.position.y - playerCubeSize.y/2, db_ctx.liveGame.player.position.z - playerCubeSize.z/2 }, rl.Vector3{ db_ctx.liveGame.player.position.x + playerCubeSize.x/2, db_ctx.liveGame.player.position.y + playerCubeSize.y/2, db_ctx.liveGame.player.position.z + playerCubeSize.z/2 } }, rl.BoundingBox{ rl.Vector3{ db_ctx.liveGame.win_location.x - pickupDetectSize.x/2, db_ctx.liveGame.win_location.y - pickupDetectSize.y/2, db_ctx.liveGame.win_location.z - pickupDetectSize.z/2 }, rl.Vector3{ db_ctx.liveGame.win_location.x + pickupDetectSize.x/2, db_ctx.liveGame.win_location.y + pickupDetectSize.y/2, db_ctx.liveGame.win_location.z + pickupDetectSize.z/2 } }){
             isWin = true
             isGameOver = true
             rl.StopMusicStream(gameplayMusic)
@@ -434,7 +405,6 @@ main :: proc() {
         }
 
         if isGameOver {
-            //TODO: play lose/win music
             if isWin {
                 rl.UpdateMusicStream(winMusic)
             } else {
@@ -554,7 +524,7 @@ main :: proc() {
                 db_ctx.gameInit.enemy_list = enemy_init
                 camera.position = player_init.position
                 db_ctx.gameInit.player = player_init
-                db_ctx.liveGame = db_ctx.gameInit
+                db_ctx, _ = load_database_or_err()
                 isGameOver = false
                 isWin = false
                 if isWin {
@@ -588,8 +558,6 @@ main :: proc() {
         }
 
 
-
-
         //--------------------------------------------------------------------------------------------------------------
         rl.EndDrawing()
     }
@@ -601,7 +569,6 @@ main :: proc() {
 
     //db_ctx.gameInit.enemy_list = enemy_init
     //save_database_or_err(db_ctx)
-
 
     rl.CloseWindow()              // Close window and OpenGL context
 }

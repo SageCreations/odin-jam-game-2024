@@ -30,7 +30,7 @@ Player :: struct {
 Item :: struct {
     position: rl.Vector3,
     item_type: int, // 0 - health boost, 1 - attack boost
-    usable: bool
+    usable: bool,
 }
 
 
